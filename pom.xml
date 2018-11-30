@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.neo</groupId>
-	<artifactId>spring-boot-docker-harbor</artifactId>
+	<artifactId>spring-boot-docker-hub</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
 
-	<name>spring-boot-docker-harbor</name>
+	<name>spring-boot-docker-hub</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>
@@ -19,8 +19,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
 		<java.version>1.8</java.version>
+		<docker.image.prefix>derek128</docker.image.prefix>
 	</properties>
 
 	<dependencies>
@@ -46,55 +46,15 @@
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>1.1.1</version>
-
-				<executions>
-					<execution>
-						<!--定义一个执行命令的id-->
-						<id>build-image</id>
-						<!--绑定mvn的哪个命令-->
-						<phase>package</phase>
-						<goals>
-							<!--要执行的命令 -->
-							<goal>build</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>image-tag</id>
-						<phase>package</phase>
-						<goals>
-							<!--tag命令，相当于docker的tag命令-->
-							<goal>tag</goal>
-						</goals>
-						<configuration>
-							<!--镜像名-->
-							<image>${docker.image.prefix}/${project.artifactId}:${project.version}-${maven.build.timestamp}</image>
-							<!--打的标签名-->
-							<newName>${docker.registry.prefix}/${docker.image.prefix}/${project.artifactId}:${project.version}-${maven.build.timestamp}</newName>
-						</configuration>
-					</execution>
-					<execution>
-						<id>package-push</id>
-						<phase>package</phase>
-						<goals>
-							<!--相当于docker的push命令-->
-							<goal>push</goal>
-						</goals>
-						<configuration>
-							<!--要push的镜像名-->
-							<imageName>${docker.registry.prefix}/${docker.image.prefix}/${project.artifactId}:${project.version}-${maven.build.timestamp}</imageName>
-						</configuration>
-					</execution>
-				</executions>
-
 				<configuration>
 					<!--覆盖相同标签镜像-->
 					<forceTags>true</forceTags>
+					<!--指定镜像名称 仓库/镜像名:标签-->
+					<imageName>${docker.image.prefix}/${project.artifactId}:${version}</imageName>
 					<!-- 指定仓库地址-->
 					<dockerHost>${docker.host.url}</dockerHost>
 					<!--dockerfile文件路径-->
 					<dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-					<!--指定镜像名称 仓库/镜像名:标签-->
-					<imageName>${docker.image.prefix}/${project.artifactId}:${project.version}-${maven.build.timestamp}</imageName>
 					<resources>
 						<!-- 指定资源文件 -->
 						<resource>
@@ -107,7 +67,7 @@
 						</resource>
 					</resources>
 					<!--mvn setting.xml配置的那个id-->
-					<serverId>docker-harbor</serverId>
+					<serverId>docker-hub</serverId>
 				</configuration>
 			</plugin>
 
@@ -120,9 +80,7 @@
 			<id>dev</id>
 			<properties>
 				<spring.profiles.active>dev</spring.profiles.active>
-				<docker.image.prefix>test</docker.image.prefix>
-				<docker.host.url>http://192.168.1.152:2375</docker.host.url>
-				<docker.registry.prefix>192.168.1.235</docker.registry.prefix>
+				<docker.host.url>http://192.168.1.238:2375</docker.host.url>
 			</properties>
 			<activation>
 				<activeByDefault>true</activeByDefault>
@@ -133,9 +91,7 @@
 			<id>test</id>
 			<properties>
 				<spring.profiles.active>test</spring.profiles.active>
-				<docker.image.prefix>library</docker.image.prefix>
-				<docker.host.url>http://192.168.1.152:2375</docker.host.url>
-				<docker.registry.prefix>192.168.1.235:2350</docker.registry.prefix>
+				<docker.host.url>http://192.168.58.138:2375</docker.host.url>
 			</properties>
 		</profile>
 		<!--准生产环境-->
@@ -143,9 +99,7 @@
 			<id>uat</id>
 			<properties>
 				<spring.profiles.active>uat</spring.profiles.active>
-				<docker.image.prefix>library</docker.image.prefix>
-				<docker.host.url>http://192.168.1.152:2375</docker.host.url>
-				<docker.registry.prefix>192.168.1.235</docker.registry.prefix>
+				<docker.host.url>http://192.168.58.138:2375</docker.host.url>
 			</properties>
 		</profile>
 		<!--生产环境-->
@@ -153,9 +107,7 @@
 			<id>release</id>
 			<properties>
 				<spring.profiles.active>release</spring.profiles.active>
-				<docker.image.prefix>library</docker.image.prefix>
-				<docker.host.url>http://192.168.1.152:2375</docker.host.url>
-				<docker.registry.prefix>192.168.1.235</docker.registry.prefix>
+				<docker.host.url>http://192.168.58.138:2375</docker.host.url>
 			</properties>
 		</profile>
 	</profiles>
