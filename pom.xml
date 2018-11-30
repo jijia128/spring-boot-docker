@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.neo</groupId>
-	<artifactId>spring-boot-docker</artifactId>
+	<artifactId>spring-boot-docker-harbor</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
 
-	<name>spring-boot-docker</name>
+	<name>spring-boot-docker-harbor</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>
@@ -19,9 +19,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
 		<java.version>1.8</java.version>
-		<docker.image.prefix>test</docker.image.prefix>
-		<docker.registry.prefix>192.168.58.167:5000</docker.registry.prefix>
 	</properties>
 
 	<dependencies>
@@ -35,6 +34,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -67,9 +67,9 @@
 						</goals>
 						<configuration>
 							<!--镜像名-->
-							<image>${project.artifactId}:${version}</image>
+							<image>${docker.image.prefix}/${project.artifactId}:${project.version}-${maven.build.timestamp}</image>
 							<!--打的标签名-->
-							<newName>${docker.registry.prefix}/${project.artifactId}:${version}</newName>
+							<newName>${docker.registry.prefix}/${docker.image.prefix}/${project.artifactId}:${project.version}-${maven.build.timestamp}</newName>
 						</configuration>
 					</execution>
 					<execution>
@@ -81,7 +81,7 @@
 						</goals>
 						<configuration>
 							<!--要push的镜像名-->
-							<imageName>${docker.registry.prefix}/${project.artifactId}:${version}</imageName>
+							<imageName>${docker.registry.prefix}/${docker.image.prefix}/${project.artifactId}:${project.version}-${maven.build.timestamp}</imageName>
 						</configuration>
 					</execution>
 				</executions>
@@ -94,7 +94,7 @@
 					<!--dockerfile文件路径-->
 					<dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
 					<!--指定镜像名称 仓库/镜像名:标签-->
-					<imageName>${project.artifactId}:${version}</imageName>
+					<imageName>${docker.image.prefix}/${project.artifactId}:${project.version}-${maven.build.timestamp}</imageName>
 					<resources>
 						<!-- 指定资源文件 -->
 						<resource>
@@ -106,9 +106,8 @@
 							<include>${project.build.finalName}.jar</include>
 						</resource>
 					</resources>
-					<!--mvn setting.xml配置的那个id
+					<!--mvn setting.xml配置的那个id-->
 					<serverId>docker-harbor</serverId>
-					-->
 				</configuration>
 			</plugin>
 
@@ -121,7 +120,9 @@
 			<id>dev</id>
 			<properties>
 				<spring.profiles.active>dev</spring.profiles.active>
-				<docker.host.url>http://192.168.58.166:2375</docker.host.url>
+				<docker.image.prefix>test</docker.image.prefix>
+				<docker.host.url>http://192.168.1.152:2375</docker.host.url>
+				<docker.registry.prefix>192.168.1.235</docker.registry.prefix>
 			</properties>
 			<activation>
 				<activeByDefault>true</activeByDefault>
@@ -132,7 +133,9 @@
 			<id>test</id>
 			<properties>
 				<spring.profiles.active>test</spring.profiles.active>
-				<docker.host.url>http://192.168.58.166:2375</docker.host.url>
+				<docker.image.prefix>library</docker.image.prefix>
+				<docker.host.url>http://192.168.1.152:2375</docker.host.url>
+				<docker.registry.prefix>192.168.1.235:2350</docker.registry.prefix>
 			</properties>
 		</profile>
 		<!--准生产环境-->
@@ -140,7 +143,9 @@
 			<id>uat</id>
 			<properties>
 				<spring.profiles.active>uat</spring.profiles.active>
-				<docker.host.url>http://192.168.58.138:2375</docker.host.url>
+				<docker.image.prefix>library</docker.image.prefix>
+				<docker.host.url>http://192.168.1.152:2375</docker.host.url>
+				<docker.registry.prefix>192.168.1.235</docker.registry.prefix>
 			</properties>
 		</profile>
 		<!--生产环境-->
@@ -148,10 +153,13 @@
 			<id>release</id>
 			<properties>
 				<spring.profiles.active>release</spring.profiles.active>
-				<docker.host.url>http://192.168.58.138:2375</docker.host.url>
+				<docker.image.prefix>library</docker.image.prefix>
+				<docker.host.url>http://192.168.1.152:2375</docker.host.url>
+				<docker.registry.prefix>192.168.1.235</docker.registry.prefix>
 			</properties>
 		</profile>
 	</profiles>
+
 	
 	<!--第三方maven私服-->
     <repositories>
