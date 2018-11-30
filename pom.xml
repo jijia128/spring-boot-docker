@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.neo</groupId>
+	<artifactId>spring-boot-docker</artifactId>
+	<version>1.0</version>
+	<packaging>jar</packaging>
+
+	<name>spring-boot-docker</name>
+	<description>Demo project for Spring Boot</description>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.0.0.RELEASE</version>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
+		<docker.image.prefix>test</docker.image.prefix>
+		<docker.registry.prefix>192.168.58.167:5000</docker.registry.prefix>
+	</properties>
+
+	<dependencies>
+	     <dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-web</artifactId>
+	    </dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>1.1.1</version>
+
+				<executions>
+					<execution>
+						<!--定义一个执行命令的id-->
+						<id>build-image</id>
+						<!--绑定mvn的哪个命令-->
+						<phase>package</phase>
+						<goals>
+							<!--要执行的命令 -->
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>image-tag</id>
+						<phase>package</phase>
+						<goals>
+							<!--tag命令，相当于docker的tag命令-->
+							<goal>tag</goal>
+						</goals>
+						<configuration>
+							<!--镜像名-->
+							<image>${project.artifactId}:${version}</image>
+							<!--打的标签名-->
+							<newName>${docker.registry.prefix}/${project.artifactId}:${version}</newName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>package-push</id>
+						<phase>package</phase>
+						<goals>
+							<!--相当于docker的push命令-->
+							<goal>push</goal>
+						</goals>
+						<configuration>
+							<!--要push的镜像名-->
+							<imageName>${docker.registry.prefix}/${project.artifactId}:${version}</imageName>
+						</configuration>
+					</execution>
+				</executions>
+
+				<configuration>
+					<!--覆盖相同标签镜像-->
+					<forceTags>true</forceTags>
+					<!-- 指定仓库地址-->
+					<dockerHost>${docker.host.url}</dockerHost>
+					<!--dockerfile文件路径-->
+					<dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+					<!--指定镜像名称 仓库/镜像名:标签-->
+					<imageName>${project.artifactId}:${version}</imageName>
+					<resources>
+						<!-- 指定资源文件 -->
+						<resource>
+							<!-- 指定要复制的目录路径，这里是当前目录 -->
+							<targetPath>/</targetPath>
+							<!-- 指定要复制的根目录，这里是target目录 -->
+							<directory>${project.build.directory}</directory>
+							<!-- 指定需要拷贝的文件，这里指最后生成的jar包 -->
+							<include>${project.build.finalName}.jar</include>
+						</resource>
+					</resources>
+					<!--mvn setting.xml配置的那个id
+					<serverId>docker-harbor</serverId>
+					-->
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<profiles>
+		<!--开发环境-->
+		<profile>
+			<id>dev</id>
+			<properties>
+				<spring.profiles.active>dev</spring.profiles.active>
+				<docker.host.url>http://192.168.58.166:2375</docker.host.url>
+			</properties>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+		<!--测试环境-->
+		<profile>
+			<id>test</id>
+			<properties>
+				<spring.profiles.active>test</spring.profiles.active>
+				<docker.host.url>http://192.168.58.166:2375</docker.host.url>
+			</properties>
+		</profile>
+		<!--准生产环境-->
+		<profile>
+			<id>uat</id>
+			<properties>
+				<spring.profiles.active>uat</spring.profiles.active>
+				<docker.host.url>http://192.168.58.138:2375</docker.host.url>
+			</properties>
+		</profile>
+		<!--生产环境-->
+		<profile>
+			<id>release</id>
+			<properties>
+				<spring.profiles.active>release</spring.profiles.active>
+				<docker.host.url>http://192.168.58.138:2375</docker.host.url>
+			</properties>
+		</profile>
+	</profiles>
+	
+	<!--第三方maven私服-->
+    <repositories>
+        <repository>
+            <id>nexus-aliyun</id>
+            <name>Nexus aliyun</name>
+            <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>nexus-aliyun</id>
+            <name>Nexus aliyun</name>
+            <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+</project>
